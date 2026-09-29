@@ -8,13 +8,16 @@ namespace engine{
 
     #pragma pack(push, 1)
     struct index_node{
+        std::uint64_t id;
         std::uint64_t published_on;
         std::uint64_t byte_offset;
 
         index_node() = default;
-        index_node(std::uint64_t p_on, std::uint64_t b_offset) : published_on(p_on), byte_offset(b_offset){}
-        // helper < overloaded function
-        bool operator<(const index_node& i_node){
+        index_node(std::uint64_t n_id, std::uint64_t p_on, std::uint64_t b_offset) : id(n_id), published_on(p_on), byte_offset(b_offset){}
+        // helper < overloaded function sort by time then id
+        bool operator<(const index_node& i_node) const{
+            if(published_on == i_node.published_on)
+                return id < i_node.id;
             return published_on < i_node.published_on;
         }
     };
