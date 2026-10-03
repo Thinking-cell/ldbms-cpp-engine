@@ -31,4 +31,29 @@ namespace engine{
         monthly_archive(std::uint32_t ym, std::filesystem::path f_path) : year_month(ym), bin_path(f_path){} 
 
     };
+
+    // state class for various sorting orders
+    enum class sort_order{
+        UNSORTED,
+        LATEST,
+        OLDEST,
+        MOST_VIEWS
+    };
+
+    struct query_request{
+        std::uint64_t start_time;
+        std::uint64_t end_time;
+        // keyword for search
+        std::string keyword = "";
+        bool search_title = true;
+        bool search_summary = true;
+        bool search_author = true;
+
+        // categorization
+        std::uint8_t category = 255; // 255 means all categories
+        std::string nation = ""; // empty string means all nations
+
+        // sort order preference
+        sort_order sort_by = sort_order::UNSORTED;
+    };
 }

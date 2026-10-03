@@ -6,7 +6,8 @@
 #include<unordered_map>
 
 #include "cold_storage_manager.h"
-#include "news_record.h"
+#include "../../core/news_record.h"
+#include "../../core/cold_data_types.h"
 
 namespace engine{
 
@@ -14,7 +15,7 @@ namespace engine{
         static constexpr std::uint64_t ONE_YEAR_TIMESTAMP = 60 * 60 * 24 * 365; 
     };
 
-    class historical_search_engine{
+    class historical_query_engine{
 
         engine::cold_storage_manager& mgr;
         void step_month(std::uint32_t& ym){
@@ -28,7 +29,7 @@ namespace engine{
         }
 
     public:
-        historical_search_engine(engine::cold_storage_manager& m) : mgr(m) {}
+        historical_query_engine(engine::cold_storage_manager& m) : mgr(m) {}
         
         bool time_series_search(std::uint64_t start_timespamp, std::uint64_t end_timestamp, std::vector<data::news_record>& results){
             if(start_timespamp > end_timestamp ||
@@ -93,8 +94,67 @@ namespace engine{
                 }
             }
 
-            return true;
+            return true;  
+        }
+
+        bool delete_record(data::news_record dead_record){
+            std::uint32_t ym = mgr.get_year_month(dead_record.published_on);
+            monthly_archive *archive = mgr.get_archive(ym);
+            if(!archive) return true; // no archive exists for the given record
+            // create the key for the search
+            // helper < op is written to do primary comparison on date then id
+            // getting the right record with the correct id will automatically taken care
+            // by the STL binary search
+            engine::index_node target(dead_record.id, dead_record.published_on, 0);
+            // get lower bound of the search
+            // either the record or the lower value will be caught
+            auto itr = std::lower_bound(archive->timestamp_index.begin(), archive->timestamp_index.end(), target);
+            // check if STL binary search got the correct record if not then return false
+            if(!(itr != archive->timestamp_index.end() && itr->id == dead_record.id && 
+            itr->published_on == dead_record.published_on))
+                return false;
             
+            // record is found now delete it
+            archive->holes.push_back(itr->byte_offset); // mark the record space on disk as available
+            mgr.recycle_id(itr->id); // recycle the id of record for later use 
+            archive->timestamp_index.erase(itr); // remove the index from archives timestamp_index
+            
+            return true;
+
+        }
+
+        bool update_record(data::news_record record){
+            // check memory footprint of the passed record
+            if(sizeof(data::news_record) != sizeof(record)) return false;
+            std::uint32_t ym = mgr.get_year_month(record.published_on);
+            monthly_archive *archive = mgr.get_archive(ym);
+            if(!archive) return false; // no archive exists for the given record
+            // create the key for the search
+            // helper < op is written to do primary comparison on date then id
+            // getting the right record with the correct id will automatically taken care
+            // by the STL binary search
+            engine::index_node updated_index(record.id, record.published_on, 0);
+            // get the index of the record
+            auto itr = std::lower_bound(archive->timestamp_index.begin(), archive->timestamp_index.end(), updated_index);
+            // check if STL binary search got the correct record if not then return false
+            if(!(itr != archive->timestamp_index.end() && itr->id == record.id && 
+            itr->published_on == record.published_on))
+                return false;
+            
+            // record is found now update it
+            {
+                std::fstream rw_stream(archive->bin_path, std::ios::binary | std::ios::in | std::ios::out);
+                if(!rw_stream.is_open()) return false;
+
+                rw_stream.seekp(itr->byte_offset, std::ios::beg); // set the write head
+
+                rw_stream.write(reinterpret_cast<char *>(&record), sizeof(record)); // overwrite the record
+
+                if(!rw_stream.good()) return false; // false on write error
+            }
+
+            return true;
+
         }
     };
 }

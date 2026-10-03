@@ -20,9 +20,9 @@ namespace data{
         char country_code[4];        // 4 bytes (e.g., "USA\0")
         
         fixed_string<256> title;       // 258 bytes (64 char + 2 byte uint16_t length)
-        fixed_string<64> author_email;// 66 bytes
-        fixed_string<564> link;       // 566 bytes
-        fixed_string<256> summary;    // 258 bytes
+        fixed_string<64> author;       // 66 bytes
+        fixed_string<564> link;        // 566 bytes
+        fixed_string<256> summary;     // 258 bytes
     };
     // Restore default compiler alignment
     #pragma pack(pop)

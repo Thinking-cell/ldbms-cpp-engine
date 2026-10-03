@@ -7,21 +7,22 @@
 #include<unordered_map>
 #include<vector>
 
-#include "news_record.h"
-#include "cold_data_types.h"
+#include "../../core/news_record.h"
+#include "../../core/cold_data_types.h"
 #include "io_metadata_manager.h"
-#include "sorting/introsort.h"
+#include "../../sorting/introsort.h"
+#include "../../core/cold_data_types.h"
+#include "id_gen.h"
 
 namespace engine{
     class cold_storage_manager{
 
         const std::uint16_t RECORD_SIZE;
-        const std::uint32_t BUFFER_SIZE;
         std::filesystem::path archive_dir_path;
         metadata::id_gen_mgr id_gen;
         std::unordered_map<std::uint32_t, std::unique_ptr<monthly_archive>> archives;
 
-        friend class historical_search_engine;
+        friend class historical_query_engine;
 
         std::uint32_t get_year_month(std::uint64_t timestamp){
             std::time_t time = static_cast<time_t>(timestamp);
@@ -112,7 +113,7 @@ namespace engine{
         
     public:
         cold_storage_manager(std::filesystem::path f_path) : archive_dir_path(f_path), RECORD_SIZE(sizeof(data::news_record)), 
-        BUFFER_SIZE(50000), id_gen(f_path){}
+        id_gen(f_path){}
 
         cold_storage_manager(const cold_storage_manager&) = delete;
         cold_storage_manager(cold_storage_manager&&) = delete;
@@ -154,7 +155,7 @@ namespace engine{
         }
 
         
-        bool backup_records(const std::vector<data::news_record> records){
+        bool backup_records(const std::vector<data::news_record>& records){
             if(records.empty()) return true;
             // loop  through records and sort in the appropriate buckets of yyyymm
             std::unordered_map<std::uint32_t, std::vector<data::news_record>> buckets;
@@ -223,6 +224,7 @@ namespace engine{
             id_gen.save_id();
             return all_successful;
         }
+
 
     };
 }
