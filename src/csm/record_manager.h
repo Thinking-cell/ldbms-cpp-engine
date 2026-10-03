@@ -1,6 +1,7 @@
 #pragma once
-#include<vector>
 #include<filesystem>
+#include<vector>
+#include<unordered_set>
 
 #include "components/cold_storage_manager.h"
 #include "components/historical_query_engine.h"
@@ -76,23 +77,34 @@ namespace engine{
             
         }
 
+        void categorize_records(const std::unordered_set<std::uint8_t>& categories, 
+            const std::unordered_set<std::string>& nations ,std::vector<data::news_record>& records){
+                std::vector<data::news_record> filtered_records;
+                for(auto& record : records){
+                    // allow either empty set(no categorization) or has a group
+                    bool category_matched = categories.empty() || categories.contains(record.category_id);
+                    bool nation_matched = nations.empty() || nations.contains(record.country_code);
+                    if(category_matched && nation_matched)
+                        filtered_records.push_back(std::move(record));
+                }
+            
+            records = std::move(filtered_records);
+        }
+
         std::vector<data::news_record> search_records(const query_request& query){
             std::vector<data::news_record> raw_result;
             // fetch all the records within the time range
             if(!query_engine.time_series_search(query.start_time, query.end_time, raw_result))
                 return {};
             
-            // to save the actual processed results
-            std::vector<data::news_record> filtered_result;
-
             // check if a keyword was inputted
             // skip the loop if there is nothing to search
             if(query.keyword.empty()){
-                filtered_result = std::move(raw_result); // make move all records to filtered result
-                sort_records(query.sort_by, filtered_result);
-                return filtered_result;
+                sort_records(query.sort_by, raw_result);
+                return raw_result;
             }
-            
+            // to save the actual processed results
+            std::vector<data::news_record> filtered_result;
             // now filter each record
             for(auto& record : raw_result){
 
