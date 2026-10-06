@@ -1,5 +1,6 @@
 #pragma once
 #include<cstdint>
+#include<cstdlib>
 #include<filesystem>
 #include<format>
 #include<iostream>
@@ -45,8 +46,12 @@ namespace ui{
         }
 
         void clear_screen(){
-            // screen clearing escape sequences
-            std::cout << "\033[2J\033[1;1H";
+            std::system("cls");
+        }
+
+
+        void center_text(std::string text){
+            std::cout << std::format("{:^{}}\n", text, ui_metadata::APP_WIDTH);
         }
 
         void render_header(std::string heading){
@@ -92,7 +97,10 @@ namespace ui{
             for(int i = 0; i < 12; i++){
                 results = api.search_records(query);
                 if(!results.empty()){
-                    results.resize(limit); // only return 100 records
+                    // limit records to 100
+                    if(results.size() > static_cast<size_t>(limit)) {
+                        results.resize(limit); 
+                    }
                     return results;
                 }else{
                     // move one year back if no results were found
@@ -120,8 +128,9 @@ namespace ui{
             render_thick_bar();
 
             if(active_results.empty()){
-                std::cout << "No records to show! \n";
+                center_text("No records to show!");
                 render_thick_bar();
+                return;
             }
 
             std::uint32_t end_index = get_min((current_page_idx + PAGE_LIMIT), active_results.size());
@@ -139,7 +148,7 @@ namespace ui{
                 std::strftime(date_buf, sizeof(date_buf), "%Y-%m-%d", std::gmtime(&p_time));
                 // formatting the row
                 std::string row = std::format(
-                    "[{:<16}]       DATE: {:<12}     VIEWS: {:<16}"
+                    "[{:<16}]       DATE: {:<12}     VIEWS: {:<16}\n\n"
                     "   > Title:    {}\n"
                     "   > Summary:  {}\n"
                     "   > Link:     {}\n",
@@ -262,8 +271,9 @@ namespace ui{
 
         void prompt_delete(){
             clear_screen();
-            render_header("Delete Mode");
+            std::cout << "\n\n";
             render_page();
+            render_header("Delete Mode");
             std::string input;
             std::cout << "\nEnter Record IDs to delete(comma-separated): ";
             std::getline(std::cin, input);
@@ -308,8 +318,9 @@ namespace ui{
 
         void prompt_update(){
             clear_screen();
-            render_header("Update Mode");
+            
             render_page();
+            render_header("Update Mode");
 
             std::cout << "\nEnter single Record ID to update: ";
             std::string input;
@@ -506,15 +517,9 @@ namespace ui{
         terminal_app(engine::record_manager& mgr) : api(mgr){}
 
         void wait_for_user(){
-            std::string temp = "";
-            std::cout  << "Press Enter to continue...\n";
-            // clear input buffer if there is leftover garbage in the stream
-            if (std::cin.fail() || std::cin.peek() == '\n') {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            }
+            std::string temp;
+            std::cout  << "\nPress Enter to continue...\n";
             std::cin.clear(); // reset cin
-            
             std::getline(std::cin, temp);
         }
 
@@ -538,7 +543,7 @@ namespace ui{
                 render_page();
 
                 std::cout << "\n OPTIONS: [N]ext | [P]rev | [Q]uery | [C]ategorize" 
-                << " | [A]dd | [D]elete | [U]pdate | [I]nject | [E]xit\n> ";
+                << "\n\n         | [A]dd | [D]elete | [U]pdate | [I]nject | [E]xit\n> ";
 
                 std::string choice_string;
                 std::getline(std::cin, choice_string);
@@ -598,8 +603,8 @@ namespace ui{
             }
 
             clear_screen();
-            render_header("System shutting down.\n");
-            std::cout << "\nSaving db state closing database...\n";
+            render_header("System shutting down.");
+            std::cout << "\nSaving db state->closing database...\n";
             if(api.shutdown()) std::cout << "Shutdown sequence successful.";
             else std::cout << "Shutdown sequence failed!\n Previous state might be lost.";
             wait_for_user();
