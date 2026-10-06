@@ -40,8 +40,6 @@ namespace data{
 
         
 
-        
-
         friend std::ostream& operator<<(std::ostream& o, const fixed_string& s){
             // pushing the entire string into the output stream at once
             return o << std::string_view(s.data, s.length);
@@ -50,6 +48,25 @@ namespace data{
         char& operator[](const int index){ return data[index]; }
         const char operator[](int index) const { return data[index]; }
 
+        void set_data(const char* s){
+            length = 0;
+            if(s == nullptr){
+                data[0] = '\0';
+                return;
+            }
+            // get size of s
+            std::uint32_t s_len = std::strlen(s);
+            // capping length to max length
+            length = (s_len < MAX_LENGTH - 1) ? s_len : (MAX_LENGTH - 1);
+            
+            // hardware-accelerated full block copy
+            std::memcpy(data, s, length);
+            data[length] = '\0';
+            
+            // zero out the remaining memory for safe Disk writes using pointer arithematic
+            // in one go
+            std::memset(data + length + 1, 0, MAX_LENGTH - length - 1);
+        }
 
         friend bool operator<(const fixed_string& lhs, const fixed_string& rhs){
             // Use standard lexicographical compare for the smaller length

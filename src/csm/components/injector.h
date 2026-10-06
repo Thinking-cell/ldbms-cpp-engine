@@ -1,4 +1,5 @@
 #pragma once
+#include<cstdint>
 #include<filesystem>
 #include<fstream>
 #include<vector>
@@ -10,8 +11,8 @@
 namespace injector{
     class record_injector{
         std::filesystem::path src_path;
-        const unsigned int CHUNK_SIZE;
-        const unsigned int RECORD_SIZE;
+        const std::uint64_t CHUNK_SIZE;
+        const std::uint32_t RECORD_SIZE;
 
         template<typename ID_GEN_TYPE>
         void id_records(ID_GEN_TYPE get_id, std::vector<data::news_record>& records){

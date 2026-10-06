@@ -45,9 +45,9 @@ namespace engine{
         std::uint64_t end_time;
         // keyword for search
         std::string keyword = "";
-        bool search_title = true;
-        bool search_summary = true;
-        bool search_author = true;
+        bool search_title = false;
+        bool search_summary = false;
+        bool search_author = false;
 
         // categorization
         std::uint8_t category = 255; // 255 means all categories
@@ -56,4 +56,5 @@ namespace engine{
         // sort order preference
         sort_order sort_by = sort_order::UNSORTED;
     };
+
 }

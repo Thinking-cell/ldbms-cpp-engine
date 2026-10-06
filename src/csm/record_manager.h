@@ -22,6 +22,10 @@ namespace engine{
         record_manager(std::filesystem::path archive_path) : 
         cold_db(archive_path), query_engine(cold_db){}
 
+        ~record_manager(){
+            shutdown();
+        }
+
         // DB management methods
         bool backup_records(std::vector<data::news_record> pay_load){
             return cold_db.backup_records(pay_load);
@@ -29,6 +33,10 @@ namespace engine{
 
         bool backup_metadata(){
             return cold_db.backup_metadata();
+        }
+
+        std::uint64_t generate_id(){
+            return cold_db.generate_id();
         }
 
         bool shutdown(){
@@ -67,7 +75,7 @@ namespace engine{
                 sort::intro_sort(records.data(), 
                     records.size(),
                 [](const data::news_record& a, const data::news_record& b){
-                    return a.views < b.views;
+                    return b.views < a.views;
                 });
                 break;
 

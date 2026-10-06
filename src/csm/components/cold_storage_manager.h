@@ -46,7 +46,7 @@ namespace engine{
         bool fill_archive_holes(std::vector<data::news_record>&  bucket, monthly_archive& archive, std::fstream& rw_stream){
             if(archive.holes.empty()) return true;
             std::vector<std::uint64_t> consumed_holes;
-            int initial_hole_index = archive.holes.size();
+            int initial_hole_index = archive.holes.size(); // TODO remove this
             // start filling holes
             while(!bucket.empty() && !archive.holes.empty()){
                 data::news_record record = bucket.back();
@@ -55,8 +55,7 @@ namespace engine{
                 rw_stream.write(reinterpret_cast<char *>(&record), sizeof(record));
                 // rollback when encountering a write error
                 if(!rw_stream.good()){
-                    // resize the hole stack
-                    archive.holes.resize(initial_hole_index);
+                    // push back all the consumed holes
                     for(auto itr = consumed_holes.rbegin(); itr != consumed_holes.rend(); ++itr){
                         archive.holes.push_back(*itr);
                     }
