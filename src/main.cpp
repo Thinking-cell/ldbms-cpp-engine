@@ -13,7 +13,7 @@ engine::record_manager *global_db_ptr = nullptr;
 void unexpected_shutdown(int signum){
     if (global_db_ptr) {
         std::cout << "\n\n[OS KILL SIGNAL DETECTED]\n";
-        std::cout << "Executing emergency metadata backup...\n";
+        std::cout << "Shutting down...\n";
         global_db_ptr->shutdown();
         std::cout << "Backup complete. Safe to exit.\n";
     }

@@ -59,7 +59,7 @@ namespace engine{
                 sort::intro_sort(records.data(), 
                     records.size(),
                 [](const data::news_record& a, const data::news_record& b){
-                    return a.published_on < b.published_on;
+                    return b.published_on < a.published_on;
                 });
                 break;
             
@@ -67,7 +67,7 @@ namespace engine{
                 sort::intro_sort(records.data(), 
                     records.size(),
                 [](const data::news_record& a, const data::news_record& b){
-                    return b.published_on < a.published_on;
+                    return a.published_on < b.published_on;
                 });
                 break;
             
@@ -151,14 +151,14 @@ namespace engine{
             pay_load.push_back(record);
             return cold_db.backup_records(pay_load);
         }
-        bool insert_records(std::vector<data::news_record> records){
+        bool insert_records(std::vector<data::news_record>& records){
             return cold_db.backup_records(records);
         }
 
         bool delete_records(data::news_record dead_rec){
             return query_engine.delete_record(dead_rec);
         }
-        bool delete_records(std::vector<data::news_record> dead_recs){
+        bool delete_records(std::vector<data::news_record>& dead_recs){
             bool all_successful = true;
             for(auto& d_record : dead_recs){
                 if(!query_engine.delete_record(d_record)) all_successful = false;

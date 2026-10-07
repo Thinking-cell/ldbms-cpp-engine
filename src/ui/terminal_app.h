@@ -1,6 +1,9 @@
 #pragma once
+#include<algorithm>
+#include<cctype>
 #include<cstdint>
 #include<cstdlib>
+#include<ctime>
 #include<filesystem>
 #include<format>
 #include<iostream>
@@ -45,8 +48,10 @@ namespace ui{
             return (a < b) ? a : b;
         }
 
+        // AI assisted
         void clear_screen(){
-            std::system("cls");
+            std::cout << "\x1B[2J\x1B[3J\x1B[H" << std::flush;
+
         }
 
 
@@ -174,7 +179,7 @@ namespace ui{
             // get start time from user
             query.start_time = input_unix_date(heading, "\nEnter Start Date (YYYY-MM-DD): ");
             if(query.start_time == 0){
-                std::cout << "Date conversion failed!\nDefaulting to 1 year ago.\n";
+                std::cout << "\nDefaulting to 1 year ago.\n";
                 // set start time one year ago from present
                 query.start_time = std::time(nullptr) - (engine::search_meta_data::ONE_YEAR_TIMESTAMP);
             }
@@ -183,7 +188,7 @@ namespace ui{
             do{
                 query.end_time = input_unix_date(heading, "Enter End Date (YYYY-MM-DD): ");
                 if(query.end_time == 0){
-                    std::cout << "Date conversion failed!\nDefaulting to Present.\n";
+                    std::cout << "\nDefaulting to Present.\n";
                     query.end_time = std::time(nullptr);
                 }
                 if(query.start_time > query.end_time){
