@@ -15,9 +15,8 @@ namespace data{
         uint64_t created_on;         // 8 bytes (Unix timestamp for creation)
         uint64_t expires_at;         // 8 bytes (Unix timestamp for TTL)
         uint32_t views;              // 4 bytes (Metric)
-        uint8_t category_id;         // 1 byte (Enum mapping)
+        uint16_t category_id;        // 2 byte (Enum mapping)
         uint8_t  flags;              // 1 byte  (Bitmask: 0x01 = deleted, 0x02 = hot, etc.)
-        char country_code[4];        // 4 bytes (e.g., "USA\0")
         
         fixed_string<256> title;       // 258 bytes (64 char + 2 byte uint16_t length)
         fixed_string<64> author;       // 66 bytes

@@ -2,6 +2,7 @@
 #include<cstdint>
 #include<filesystem>
 #include<fstream>
+#include<iostream>
 #include<vector>
 
 #include "../../core/news_record.h"
@@ -57,6 +58,8 @@ namespace injector{
             // return if file doesnt exist
             if(!r_stream.is_open()) return false;
             std::vector<data::news_record> pay_load;
+
+            std::uint64_t record_count = 0;
             
             while(true){
                 pay_load.resize(CHUNK_SIZE);
@@ -74,6 +77,11 @@ namespace injector{
 
                 record_vein(pay_load); // inject the records in the CSM
 
+                record_count += red_bytes / RECORD_SIZE;
+
+                std::cout << "\x1B[2J\x1B[3J\x1B[H" << std::flush;
+                std::cout << "Records Injected: " << std::to_string(record_count) << '\n';
+            
                 pay_load.clear(); // clear the pay load for the next chunk
 
             }

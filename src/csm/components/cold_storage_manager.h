@@ -22,16 +22,6 @@ namespace engine{
         metadata::id_gen_mgr id_gen;
         std::unordered_map<std::uint32_t, std::unique_ptr<monthly_archive>> archives;
 
-        friend class historical_query_engine;
-
-        std::uint32_t get_year_month(std::uint64_t timestamp){
-            std::time_t time = static_cast<time_t>(timestamp);
-            std::tm *time_info = std::gmtime(&time); // learn gmtime
-            std::uint32_t year = 1900 + time_info->tm_year; // year is from 1900
-            std::uint32_t month = time_info->tm_mon;
-            return (year * 100) + (month + 1); // yyyymm 
-        }
-
         void sort_timestamps(std::vector<index_node>& timestamps){
             sort::intro_sort(
                 timestamps.data(),
@@ -123,8 +113,20 @@ namespace engine{
             return id_gen.get_id();
         }
 
+        std::uint64_t get_total_records(){
+            return id_gen.get_total_used_ids();
+        }
+
         void recycle_id(std::uint64_t id){
             id_gen.store_id(id);
+        }
+
+        std::uint32_t get_year_month(std::uint64_t timestamp){
+            std::time_t time = static_cast<time_t>(timestamp);
+            std::tm *time_info = std::gmtime(&time); // learn gmtime
+            std::uint32_t year = 1900 + time_info->tm_year; // year is from 1900
+            std::uint32_t month = time_info->tm_mon;
+            return (year * 100) + (month + 1); // yyyymm 
         }
 
         monthly_archive* get_archive(std::uint32_t ym){

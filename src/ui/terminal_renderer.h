@@ -41,8 +41,37 @@ namespace ui {
         }
         
         // TODO : build the custom wrapped string module and return string instead
+        static inline std::string get_wrapped_string(const std::string_view text, std::string padding_ref = "    ", 
+            int width = ui_metadata::APP_WIDTH - 20, int extra_padding = 8){
+            if(text.empty())
+                return "No content to show.";
+
+            
+            std::string padding(padding_ref.size() + extra_padding + 1, ' ');
+
+            int char_count = 1;
+            std::string result = "";
+            result.reserve(text.size() + (text.size() % width) * padding.size() + 5);
+            bool ident_it = false;
+            
+            for(int i = 0, n = text.size();i < n; i++){
+                if(char_count % (width) == 0) ident_it = true;
+                
+                if((text[i] == ' ' || text[i] == '-') && ident_it){
+                    result += '\n';
+                    result += padding;
+                    ident_it = false;
+                }
+                result += text[i];
+                char_count++;
+            }
+
+            return result;
+
+        }
+
         // REMOVE THIS
-        // Restricts text width for terminal summaries and links AI assisted
+        // Restricts text width for terminal summaries and links | AI assisted
         static inline void print_wrapped(std::string_view text, size_t max_width, size_t indent) {
             size_t current_pos = 0;
             std::string padding(indent, ' ');

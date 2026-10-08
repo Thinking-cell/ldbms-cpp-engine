@@ -58,6 +58,15 @@ namespace metadata{
             return current_id[0]++;
         }
 
+        std::uint64_t get_total_used_ids(){
+            std::uint64_t total_ids = current_id[0] - vacant_id.size();
+            if(total_ids < 0){
+                return vacant_id.size();
+            }
+
+            return total_ids;
+        }
+
         void store_id(std::uint64_t id){
             vacant_id.push_back(id);    
         }

@@ -84,8 +84,8 @@ namespace ui{
         // calculate total pages to be displayed
         std::uint32_t total_pages = get_total_pages();
         // displaying using string formatting
-        std::cout << std::format(" PAGE {} of {} | TOTAL RECORDS: {}\n",
-            get_current_page(), total_pages, active_results.size());
+        std::cout << std::format(" PAGE {} of {} | FETCHED RECORDS: {} | TOTAL RECORDS: {}\n",
+            get_current_page(), total_pages, active_results.size(), std::to_string(api.get_total_records()));
 
         renderer::render_thick_bar();
 
@@ -104,17 +104,21 @@ namespace ui{
             std::string_view title_view(record.title.data, record.title.length);
             std::string_view summary_view(record.summary.data, record.summary.length);
             std::string_view link_view(record.link.data, record.link.length);
+            std::string_view author_view(record.author.data, record.author.length);
             // converting unix-timestamp to readable yyyy-mm-dd format, AI assisted
             std::time_t p_time = record.published_on;
             char date_buf[20];
             std::strftime(date_buf, sizeof(date_buf), "%Y-%m-%d", std::gmtime(&p_time));
             // formatting the row
             std::string row = std::format(
-                "[{:<16}]       DATE: {:<12}     VIEWS: {:<16}\n\n"
-                "   > Title:    {}\n"
-                "   > Summary:  {}\n"
-                "   > Link:     {}\n",
-                record.id, date_buf, record.views, title_view, summary_view, link_view
+                "[{:<16}]       DATE: {:<12}     AUTHOR: {:<10}\n\n"
+                "   > Title:    {}\n\n"
+                "   > Summary:  {}\n\n"
+                "   > Link:     {}\n\n",
+                record.id, date_buf, author_view, 
+                renderer::get_wrapped_string(title_view, "Title"),
+                renderer::get_wrapped_string(summary_view, "Summary"),
+                link_view
             );
             // printing the row
             std::cout << row;
@@ -484,7 +488,7 @@ namespace ui{
 
         std::cout << "\nFetching latest available records...\n";
         // pull 100 latest available news
-        active_results = fetch_latest(100);
+        active_results = fetch_latest();
 
         bool running = true;
         while(running){
@@ -492,7 +496,7 @@ namespace ui{
             render_page();
 
             std::cout << "\n OPTIONS: [N]ext | [P]rev | [Q]uery | [C]ategorize" 
-            << "\n\n         | [A]dd | [D]elete | [U]pdate | [I]nject | [E]xit\n> ";
+            << "\n\n        [L]atest | [A]dd | [D]elete | [U]pdate | [I]nject | [E]xit\n> ";
 
             std::string choice_string;
             std::getline(std::cin, choice_string);
@@ -543,6 +547,10 @@ namespace ui{
 
             case 'E':
                 running = false;
+                break;
+
+            case 'L':
+                active_results = fetch_latest();
                 break;
             
             default:
