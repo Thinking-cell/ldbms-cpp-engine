@@ -76,14 +76,12 @@ namespace engine {
         
     }
 
-    void record_manager::categorize_records(const std::unordered_set<std::uint8_t>& categories, 
-        const std::unordered_set<std::string>& nations ,std::vector<data::news_record>& records){
+    void record_manager::categorize_records(const std::unordered_set<std::uint16_t>& categories ,std::vector<data::news_record>& records){
             std::vector<data::news_record> filtered_records;
             for(auto& record : records){
                 // allow either empty set(no categorization) or has a group
                 bool category_matched = categories.empty() || categories.contains(record.category_id);
-                bool nation_matched = nations.empty() || nations.contains(record.country_code);
-                if(category_matched && nation_matched)
+                if(category_matched)
                     filtered_records.push_back(std::move(record));
             }
         

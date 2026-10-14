@@ -54,23 +54,30 @@ namespace ui{
         query.keyword = "";
         query.search_title = true;
         query.sort_by = engine::sort_order::LATEST;
+        std::vector<data::news_record> fetched_records;
 
         // search for last 12 years of records
         for(int i = 0; i < 12; i++){
-            results = api.search_records(query);
-            if(!results.empty()){
+            fetched_records = api.search_records(query);
+            if(!fetched_records.empty()){
                 // limit records to 100
-                if(results.size() > static_cast<size_t>(limit)) {
-                    results.resize(limit); 
+                int records_needed = limit - results.size();
+                int to_take = get_min(fetched_records.size(), records_needed);
+
+                for(int j = 0; j < to_take; j++){
+                    results.push_back(std::move(fetched_records[j]));
                 }
-                return results;
-            }else{
-                // move one year back if no results were found
-                query.start_time -= engine::search_meta_data::ONE_YEAR_TIMESTAMP;
-                query.end_time -= engine::search_meta_data::ONE_YEAR_TIMESTAMP;
+
+                if(results.size() >= static_cast<size_t>(limit)) return results;
+                
+        
             }
+            // move one year back if no results were found
+            query.start_time -= engine::search_meta_data::ONE_YEAR_TIMESTAMP;
+            query.end_time -= engine::search_meta_data::ONE_YEAR_TIMESTAMP;
+        
         }
-        results.clear();
+        
         return results;
 
 
@@ -181,7 +188,7 @@ namespace ui{
 
         // get sort order
         input.clear();
-        std::cout << "Sort: [0]Unsorted [1]Latest [2]Oldest [3]Most Views: ";
+        std::cout << "Sort: [0]Unsorted [1]Latest [2]Oldest: ";
         std::getline(std::cin, input);
         // check for valid order
         try { query.sort_by = static_cast<engine::sort_order>(std::stoi(input)); } 
@@ -202,34 +209,34 @@ namespace ui{
 
         renderer::clear_screen();
         renderer::render_header("Categorize Results");
-        // store the categories and the nations
-        std::unordered_set<std::uint8_t> categories;
-        std::unordered_set<std::string> nations;
+        // store the categories
+        std::unordered_set<std::uint16_t> categories;
+        
         for(const auto& record : active_results){
             categories.insert(record.category_id);
-            nations.insert(std::string(record.country_code));
+            
         }
+
+        // TODO: build a format display for categories
         // display available categories and nations
         std::cout << "\nAvailable Categories in view: ";
         for (auto c : categories) std::cout << (int)c << " ";
-        std::cout << "\nAvailable Nations in view: ";
-        for (auto& n : nations) std::cout << n << " ";
+        
         std::cout << '\n';
         // get input from the user
-        std::string cat_input, nat_input;
+        std::string cat_input;
         std::cout << "\n\nEnter target categories (comma-separated, leave blank for all): ";
         std::getline(std::cin, cat_input);
-        std::cout << "Enter target nations (comma-separated, leave blank for all): ";
-        std::getline(std::cin, nat_input);
+        
         // removing whitespaces from the inputs
         parser::trim_spaces(cat_input);
-        parser::trim_spaces(nat_input);
+       
         // parsing user input, only valid options will be used
         // invalid category, nations will be not included
         auto target_cats = parser::parse_category_set(cat_input);
-        auto target_nats = parser::parse_nation_set(nat_input);
+        
         // calling api categorize method
-        api.categorize_records(target_cats, target_nats, active_results);
+        api.categorize_records(target_cats, active_results);
         current_page_idx = 0;
         std::cout << "Results Filtered->\n";
 
@@ -320,8 +327,7 @@ namespace ui{
             std::string_view title_view(target_ptr->title.data, target_ptr->title.length);
             std::cout << "\n [1] Views:    " << target_ptr->views
                         << "\n [2] Category: " << (int)target_ptr->category_id
-                        << "\n [3] Nation:   " << target_ptr->country_code
-                        << "\n [4] Title:    " << title_view
+                        << "\n [3] Title:    " << title_view
                         << "\n\n [S] Save & Exit"
                         << "\n [C] Cancel & Discard"
                         << "\n\nSelect field to edit> ";
@@ -348,7 +354,7 @@ namespace ui{
 
             case '2':
                 input.clear();
-                std::cout << "New Category (0-255): ";
+                std::cout << "New Category (0-65535): ";
                 std::getline(std::cin, input);
                 parser::trim_spaces(input);
                 try { 
@@ -359,16 +365,6 @@ namespace ui{
                 break;
 
             case '3':
-                input.clear();
-                std::cout << "New Nation (Max 3 chars): ";
-                std::getline(std::cin, input); 
-                parser::trim_spaces(input);
-                // get only the first 3 characters of the input
-                for(int i = 0; i < 3 && i < input.length(); ++i) target_ptr->country_code[i] = toupper(input[i]);
-                target_ptr->country_code[get_min(input.length(), 3)] = '\0';
-                break;
-
-            case '4':
                 input.clear();
                 std::cout << "New Title: ";
                 std::getline(std::cin, input);
@@ -424,13 +420,6 @@ namespace ui{
         std::getline(std::cin, input);
         if(input.empty()) input = "www.dummy.com";
         record.link.set_data(input.c_str());
-
-        input.clear();
-        std::cout << "\nNation (3 chars): ";
-        std::getline(std::cin, input);
-        if(input.empty()) input = "";
-        for(int i = 0; i < 3 && i < input.length(); ++i) record.country_code[i] = toupper(input[i]);
-        record.country_code[get_min(input.length(), 3)] = '\0';
         
         input.clear();
         std::cout << "\nCategory ID (0-255): ";

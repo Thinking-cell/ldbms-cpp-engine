@@ -31,8 +31,7 @@ namespace engine {
 
         // search utility methods
         void sort_records(sort_order s, std::vector<data::news_record>& records);
-        void categorize_records(const std::unordered_set<std::uint8_t>& categories, 
-            const std::unordered_set<std::string>& nations, std::vector<data::news_record>& records);
+        void categorize_records(const std::unordered_set<std::uint16_t>& categories, std::vector<data::news_record>& records);
         std::vector<data::news_record> search_records(const query_request& query);
 
         // CUD operations
