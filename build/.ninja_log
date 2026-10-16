@@ -1,0 +1,14 @@
+# ninja log v7
+29	1831	8138479219077681	CMakeFiles/main.dir/src/csm/components/id_gen.cpp.obj	278bc9f7741eadd9
+40	1842	8138479219184020	CMakeFiles/main.dir/src/csm/components/historical_query_manager.cpp.obj	26aaf4e8a9bba171
+24	2206	8138479219027730	CMakeFiles/main.dir/src/csm/record_manager.cpp.obj	a928954c714a061a
+14	2361	8138479218933139	CMakeFiles/main.dir/src/main.cpp.obj	440cd35538433db9
+34	2561	8138479219152450	CMakeFiles/main.dir/src/csm/components/cold_storage_manger.cpp.obj	390ef9f564f0c6bf
+19	2840	8138479218933139	CMakeFiles/main.dir/src/ui/terminal_app.cpp.obj	28280f252bc8191c
+2840	3131	8138479247217489	main.exe	addd2b8eba9a39fd
+39	1765	8138482337028700	CMakeFiles/main.dir/src/csm/components/id_gen.cpp.obj	278bc9f7741eadd9
+33	2056	8138482336983319	CMakeFiles/main.dir/src/csm/record_manager.cpp.obj	a928954c714a061a
+22	2258	8138482336826245	CMakeFiles/main.dir/src/main.cpp.obj	440cd35538433db9
+45	2390	8138482337100185	CMakeFiles/main.dir/src/csm/components/cold_storage_manger.cpp.obj	390ef9f564f0c6bf
+27	2681	8138482336917255	CMakeFiles/main.dir/src/ui/terminal_app.cpp.obj	28280f252bc8191c
+2681	2914	8138482363467256	main.exe	addd2b8eba9a39fd

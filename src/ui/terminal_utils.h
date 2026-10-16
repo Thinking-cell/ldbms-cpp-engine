@@ -45,8 +45,8 @@ namespace ui{
         }
 
         // parse string to category set
-        static std::unordered_set<std::uint8_t> parse_category_set(const std::string& input){
-            std::unordered_set<std::uint8_t> result;
+        static std::unordered_set<std::uint16_t> parse_category_set(const std::string& input){
+            std::unordered_set<std::uint16_t> result;
             std::stringstream ss(input); 
             std::string token;
 
@@ -55,28 +55,13 @@ namespace ui{
                 if(token.empty()) continue; // skip blank character
                 try{
                     int number = std::stoi(token);
-                    if(number < 0 || number > 255) continue;
-                    result.insert(static_cast<std::uint8_t>(number));
+                    if(number < 0 || number > 65535) continue;
+                    result.insert(static_cast<std::uint16_t>(number));
                 }catch(...){
                     continue; // skip in case of invaild token
                 }
             }
 
-            return result;
-        }
-
-        // parses inputs like "USA, IND" for Nation Sets
-        static std::unordered_set<std::string> parse_nation_set(const std::string& input) {
-            std::unordered_set<std::string> result;
-            std::stringstream ss(input);
-            std::string token;
-            
-            while (std::getline(ss, token, ',')) {
-                trim_spaces(token);
-                if (!token.empty()) {
-                    result.insert(token);
-                }
-            }
             return result;
         }
 
