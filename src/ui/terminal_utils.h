@@ -24,8 +24,8 @@ namespace ui{
         }
 
         // to parse id list
-        static std::vector<std::uint64_t> parse_id_list(const std::string& input){
-            std::vector<std::uint64_t> result;
+        static data::td_array<std::uint64_t> parse_id_list(const std::string& input){
+            data::td_array<std::uint64_t> result;
             std::stringstream ss(input); // changing it to stream buffer format
             std::string token;
             // iterate over the string extracting tokens(ints)

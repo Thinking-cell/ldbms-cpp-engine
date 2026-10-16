@@ -76,8 +76,8 @@ namespace engine {
         
     }
 
-    void record_manager::categorize_records(const std::unordered_set<std::uint16_t>& categories ,std::vector<data::news_record>& records){
-            std::vector<data::news_record> filtered_records;
+    void record_manager::categorize_records(const std::unordered_set<std::uint16_t>& categories ,data::td_array<data::news_record>& records){
+            data::td_array<data::news_record> filtered_records;
             for(auto& record : records){
                 // allow either empty set(no categorization) or has a group
                 bool category_matched = categories.empty() || categories.contains(record.category_id);
@@ -147,7 +147,7 @@ namespace engine {
     bool record_manager::delete_records(data::news_record dead_rec){
         return query_engine.delete_record(dead_rec);
     }
-    bool record_manager::delete_records(std::vector<data::news_record>& dead_recs){
+    bool record_manager::delete_records(data::td_array<data::news_record>& dead_recs){
         bool all_successful = true;
         for(auto& d_record : dead_recs){
             if(!query_engine.delete_record(d_record)) all_successful = false;

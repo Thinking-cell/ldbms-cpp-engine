@@ -44,8 +44,9 @@ namespace ui{
     }
 
     // fetches the latest of last 12 year records
-    std::vector<data::news_record> terminal_app::fetch_latest_from_db(int limit){
-        std::vector<data::news_record> results;
+    data::td_array<data::news_record> terminal_app::fetch_latest_from_db(int limit){
+        data::td_array<data::news_record> results;
+        results.reserve(limit);
         std::uint64_t end_time = std::time(nullptr);
         std::uint64_t start_time = end_time - engine::search_meta_data::ONE_YEAR_TIMESTAMP;
         engine::query_request query;
@@ -54,7 +55,7 @@ namespace ui{
         query.keyword = "";
         query.search_title = true;
         query.sort_by = engine::sort_order::LATEST;
-        std::vector<data::news_record> fetched_records;
+        data::td_array<data::news_record> fetched_records;
 
         // search for last 12 years of records
         for(int i = 0; i < 12; i++){
@@ -118,11 +119,11 @@ namespace ui{
             std::strftime(date_buf, sizeof(date_buf), "%Y-%m-%d", std::gmtime(&p_time));
             // formatting the row
             std::string row = std::format(
-                "[{:<16}]       DATE: {:<12}     AUTHOR: {:<10}\n\n"
+                "[{:<10}]       DATE: {:<12}   CAT: {:<16}  AUTHOR: {:<12}\n\n"
                 "   > Title:    {}\n\n"
                 "   > Summary:  {}\n\n"
                 "   > Link:     {}\n\n",
-                record.id, date_buf, author_view, 
+                record.id, date_buf, data::get_category_name(static_cast<std::uint16_t>(record.category_id)), author_view, 
                 renderer::get_wrapped_string(title_view, "Title"),
                 renderer::get_wrapped_string(summary_view, "Summary"),
                 link_view
@@ -217,10 +218,13 @@ namespace ui{
             
         }
 
-        // TODO: build a format display for categories
+        
         // display available categories and nations
         std::cout << "\nAvailable Categories in view: ";
-        for (auto c : categories) std::cout << (int)c << " ";
+        for (auto c : categories) std::cout << std::format(
+            "[{:<3} : {:>10}]",
+            c, data::get_category_name(static_cast<std::uint16_t>(c))
+        ) << " ";
         
         std::cout << '\n';
         // get input from the user
@@ -252,7 +256,7 @@ namespace ui{
         std::getline(std::cin, input);
         parser::trim_spaces(input);
         // parse the input, parser will ignore invalid inputs
-        std::vector<std::uint64_t> target_ids = parser::parse_id_list(input);
+        data::td_array<std::uint64_t> target_ids = parser::parse_id_list(input);
         if(target_ids.empty()){
             renderer::clear_screen();
             renderer::render_header("No matching IDs found in current results!");
@@ -260,7 +264,7 @@ namespace ui{
         }
 
         // get the records to be deleted
-        std::vector<data::news_record> dead_records;
+        data::td_array<data::news_record> dead_records;
         for(auto& record: active_results){
             if(std::find(target_ids.begin(), target_ids.end(), record.id) != target_ids.end()){
                 dead_records.push_back(record);
@@ -276,12 +280,27 @@ namespace ui{
 
         // try to delete the records
         if(api.delete_records(dead_records)){
-            // delete records from the active results if deletion succeeded
-            std::erase_if(active_results, [&target_ids](const data::news_record& record){
-                return std::find(target_ids.begin(), target_ids.end(), record.id) != target_ids.end();
-            });
+            auto write_head = active_results.begin();
+            auto dead_head = dead_records.begin();
+            std::uint32_t new_size = 0;
+            // scan the active results and and remove deleted records
+            // as dead records are picked inorder, so filtering can be done in
+            // in one linear pass
+            for(auto read_head = active_results.begin(); read_head != active_results.end(); ++read_head){
+                // conditionals will be evaluated right to left first
+                if(dead_head != dead_records.end() && (*read_head).id == (*dead_head).id){
+                    ++dead_head;
+                    continue;
+                }
+
+                *write_head = *read_head;
+                ++write_head;
+                new_size++; 
+            }
+            active_results.set_currentsize(new_size);
             std::cout << dead_records.size() << " records deleted permanently.\n";
             api.backup_metadata();
+
         }else{
             renderer::clear_screen();
             renderer::render_header("Deletion Failed. Database error!");
@@ -300,7 +319,7 @@ namespace ui{
         std::getline(std::cin, input);
         parser::trim_spaces(input);
 
-        std::vector<std::uint64_t> target_ids = parser::parse_id_list(input);
+        data::td_array<std::uint64_t> target_ids = parser::parse_id_list(input);
         if(target_ids.size() != 1){
             std::cout << "Please enter exactly one valid ID.\n";
             return;
@@ -354,7 +373,7 @@ namespace ui{
 
             case '2':
                 input.clear();
-                std::cout << "New Category (0-65535): ";
+                std::cout << "New Category (0-11): ";
                 std::getline(std::cin, input);
                 parser::trim_spaces(input);
                 try { 
@@ -465,7 +484,7 @@ namespace ui{
             std::cout << "Injection failed!\n"; 
 
     }
-    std::vector<data::news_record> terminal_app::fetch_latest(int limit){
+    data::td_array<data::news_record> terminal_app::fetch_latest(int limit){
         std::cout << "Fetching Latest News...\n";
         // create directory if it doesnt exist
         std::filesystem::path bin_dir = latest_bin.parent_path();
