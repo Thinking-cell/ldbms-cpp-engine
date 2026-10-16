@@ -8,6 +8,7 @@
 #include "components/injector.h"
 #include "../core/news_record.h"
 #include "../sorting/introsort.h"
+#include "../core/td_array.h"
 
 namespace engine {
     class record_manager {
@@ -21,6 +22,12 @@ namespace engine {
         record_manager(std::filesystem::path archive_path);
         ~record_manager();
 
+        // banning copying, moving and assignment of record manager
+        record_manager(const record_manager&) = delete;
+        record_manager(record_manager&&) = delete;
+        record_manager& operator=(const record_manager&) = delete;
+        record_manager& operator=(record_manager&&) = delete;
+
         // DB management methods
         bool backup_records(std::vector<data::news_record> pay_load);
         bool backup_metadata();
@@ -31,14 +38,14 @@ namespace engine {
 
         // search utility methods
         void sort_records(sort_order s, std::vector<data::news_record>& records);
-        void categorize_records(const std::unordered_set<std::uint16_t>& categories, std::vector<data::news_record>& records);
+        void categorize_records(const std::unordered_set<std::uint16_t>& categories, data::td_array<data::news_record>& records);
         std::vector<data::news_record> search_records(const query_request& query);
 
         // CUD operations
         bool insert_records(data::news_record record);
         bool insert_records(std::vector<data::news_record>& records);
         bool delete_records(data::news_record dead_rec);
-        bool delete_records(std::vector<data::news_record>& dead_recs);
+        bool delete_records(data::td_array<data::news_record>& dead_recs);
         bool update_record(data::news_record record);
 
         // injector utility methods

@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 #include <unordered_set>
-#include <unordered_map>
 #include "fixed_string.h"
+#include "simple_hash_map.h"
 
 // meta data
 // RECORD_FORMAT = '<QQQQIHH256sH64sH564sH256sH'
@@ -29,7 +29,7 @@ namespace data{
     #pragma pack(pop)
 
     // 12 Clean Master Categories (ID -> Name)
-    inline const std::unordered_map<std::uint16_t, std::string> CATEGORY_NAMES = {
+    inline const simple_hash_map<std::uint16_t, std::string, 8> CATEGORY_NAMES = {
         {0, "General"},
         {1, "World News"},
         {2, "Politics"},
@@ -44,9 +44,9 @@ namespace data{
         {11, "Lifestyle"}
     };
     inline std::string get_category_name(std::uint16_t id) {
-        auto it = CATEGORY_NAMES.find(id);
-        if (it != CATEGORY_NAMES.end()) {
-            return it->second;
+        const std::string* name = CATEGORY_NAMES.find(id);
+        if (name != nullptr) {
+            return *name;
         }
         return "General";
     }
