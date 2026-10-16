@@ -42,7 +42,7 @@ namespace engine {
         bool update_record(data::news_record record);
 
         // injector utility methods
-        bool inject_records();
+        bool inject_records(bool show_status = true);
         bool prime_injector(std::filesystem::path injector_src);
     };
 }

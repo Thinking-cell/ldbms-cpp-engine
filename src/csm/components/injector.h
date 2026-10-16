@@ -52,7 +52,7 @@ namespace injector{
         }
 
         template<typename VEIN, typename ID_GEN_TYPE>
-        bool inject_records(VEIN record_vein, ID_GEN_TYPE get_id){
+        bool inject_records(VEIN record_vein, ID_GEN_TYPE get_id, bool show_status = true){
             
             std::ifstream r_stream(src_path, std::ios::binary);
             // return if file doesnt exist
@@ -79,8 +79,10 @@ namespace injector{
 
                 record_count += red_bytes / RECORD_SIZE;
 
-                std::cout << "\x1B[2J\x1B[3J\x1B[H" << std::flush;
-                std::cout << "Records Injected: " << std::to_string(record_count) << '\n';
+                if (show_status){
+                    std::cout << "\x1B[2J\x1B[3J\x1B[H" << std::flush;
+                    std::cout << "Records Injected: " << std::to_string(record_count) << '\n';
+                }
             
                 pay_load.clear(); // clear the pay load for the next chunk
 

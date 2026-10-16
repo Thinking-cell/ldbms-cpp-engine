@@ -44,7 +44,7 @@ namespace ui{
     }
 
     // fetches the latest of last 12 year records
-    std::vector<data::news_record> terminal_app::fetch_latest(int limit){
+    std::vector<data::news_record> terminal_app::fetch_latest_from_db(int limit){
         std::vector<data::news_record> results;
         std::uint64_t end_time = std::time(nullptr);
         std::uint64_t start_time = end_time - engine::search_meta_data::ONE_YEAR_TIMESTAMP;
@@ -465,6 +465,30 @@ namespace ui{
             std::cout << "Injection failed!\n"; 
 
     }
+    std::vector<data::news_record> terminal_app::fetch_latest(int limit){
+        std::cout << "Fetching Latest News...\n";
+        // create directory if it doesnt exist
+        std::filesystem::path bin_dir = latest_bin.parent_path();
+        if(!std::filesystem::is_directory(bin_dir)){
+            std::error_code e; // for error suppression
+            std::filesystem::create_directories(bin_dir, e);
+        }
+
+        if(!std::filesystem::is_regular_file(latest_bin))
+            return fetch_latest_from_db(limit);
+
+        if(api.prime_injector(latest_bin)){
+            api.inject_records(false);
+            api.backup_metadata();
+            std::error_code ec; // for error suppression
+            std::filesystem::remove(latest_bin, ec);
+        }
+
+        
+        return fetch_latest_from_db(limit);
+
+    }
+
     void terminal_app::run(){
         renderer::clear_screen();
         render_page();

@@ -15,12 +15,14 @@ namespace ui {
         std::vector<data::news_record> active_results;
         std::uint32_t current_page_idx = 0;
         std::uint32_t PAGE_LIMIT = 10;
+        std::filesystem::path latest_bin = "F:\\projects\\oop-python\\injector_src\\latest\\packed_news.bin";
 
         // Internal Helpers
         std::uint32_t get_current_page();
         std::uint32_t get_total_pages();
         std::uint64_t input_unix_date(std::string heading, std::string user_context);
         std::vector<data::news_record> fetch_latest(int limit = 100);
+        std::vector<data::news_record> fetch_latest_from_db(int limit = 100);
 
         // custom min tempalate for primitive mix type comparisons
         template<typename T, typename S>

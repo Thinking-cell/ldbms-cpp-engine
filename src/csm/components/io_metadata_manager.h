@@ -31,8 +31,8 @@ namespace metadata{
         friend class id_gen_mgr;
         // RAII rollback class for disk write
         class transaction{
-            std::filesystem::path tmp_path;
             std::filesystem::path full_path;
+            std::filesystem::path tmp_path;
             std::ofstream w_stream;
             bool is_committed;
 

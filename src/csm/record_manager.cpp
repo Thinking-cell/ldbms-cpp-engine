@@ -160,14 +160,14 @@ namespace engine {
     }
 
     // injector utility methods
-    bool record_manager::inject_records(){
+    bool record_manager::inject_records(bool show_status){
         if(!cold_injector.is_path_valid()) return false;
         // creating the wrapper lambda in order to pass the backup function to the injector
         auto vein = [this](const std::vector<data::news_record>& records){ return this->cold_db.backup_records(records);};
         // creating the wrapper lambda to pass the id generation function to the injector
         auto id_gen = [this](){return this->cold_db.generate_id();};
 
-        bool records_injected = cold_injector.inject_records(vein, id_gen);
+        bool records_injected = cold_injector.inject_records(vein, id_gen, show_status);
         return records_injected;
     }
 

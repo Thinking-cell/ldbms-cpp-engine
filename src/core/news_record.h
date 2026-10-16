@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <unordered_set>
+#include <unordered_map>
 #include "fixed_string.h"
 
 // meta data
